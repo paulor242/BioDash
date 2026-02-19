@@ -18,6 +18,10 @@ class EncoderLineal:
             data.get('distance_max'), data.get('time_force_max'), data.get('time_impulse'),
             data.get('time_accel_max'), data.get('ideal_rm'), data.get('fatigue')
         )
+        
+        if None in values:
+            print(f"⚠️ Datos faltantes en Encoder: {dict(zip(['force_max', 'velocity_max_avg', 'velocity_max', 'acceleration_max', 'power_max', 'propulsive_power_avg', 'power_avg', 'impulse_max', 'impulse_avg', 'distance_max', 'time_force_max', 'time_impulse', 'time_accel_max', 'ideal_rm', 'fatigue'], values))}")
+        
         cursor.execute(query, values)
         self.db_connection.commit()
         return cursor.lastrowid

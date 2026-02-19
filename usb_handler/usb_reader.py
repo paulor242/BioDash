@@ -28,8 +28,27 @@ class USBHandler:
         try:
             data = self.connection.readline().decode('utf-8').strip()
             if data:
-                return json.loads(data)
-        except:
+                parsed = json.loads(data)
+                # Si es un número simple, asumir que es velocidad
+                if isinstance(parsed, (int, float)):
+                    print(f"🔍 Datos recibidos (velocidad): {parsed}")
+                    return {'velocity_max': parsed, 'velocity_avg': parsed}
+                print(f"🔍 Datos recibidos: {parsed}")
+                return parsed
+        except json.JSONDecodeError:
+            # Si no es JSON, intentar convertir a número (velocidad)
+            try:
+                num = float(data)
+                print(f"🔍 Datos recibidos (velocidad): {num}")
+                return {'velocity_max': num, 'velocity_avg': num}
+            except:
+                print(f"⚠️ Error leyendo: {data}")
+                return None
+        except json.JSONDecodeError as e:
+            print(f"⚠️ Error JSON: {e} - Datos: {data}")
+            return None
+        except Exception as e:
+            print(f"⚠️ Error leyendo: {e}")
             return None
     
     def close(self):

@@ -1,8 +1,10 @@
+
 import serial
 import serial.tools.list_ports
 import mysql.connector
 import json
-from datetime import datetime
+import time
+
 
 class BioDashCollector:
     def __init__(self):
@@ -16,7 +18,7 @@ class BioDashCollector:
                 host='localhost',
                 user='root',
                 port=3306,
-                password='',  
+                password='paulo3144615',  
                 database='biodash'
             )
             print(" Conectado a base de datos BioDash")
@@ -47,7 +49,33 @@ class BioDashCollector:
         try:
             data = self.connection.readline().decode('utf-8').strip()
             if data:
-                return json.loads(data)  
+                # Intentar parsear como JSON primero
+                try:
+                    parsed = json.loads(data)
+                    if isinstance(parsed, dict):
+                        return parsed
+                except:
+                    pass
+                
+                # Si contiene comas, separar valores
+                if ',' in data:
+                    values = [float(v.strip()) for v in data.split(',')]
+                    if len(values) >= 6:
+                        return {
+                            'velocity_max': values[0],
+                            'velocity_avg': values[0],
+                            'acceleration_max': values[1],
+                            'acceleration_avg': values[1],
+                            'concentric_force_max': values[2],
+                            'concentric_force_avg': values[2],
+                            'exentric_force_max': values[3],
+                            'exentric_force_avg': values[3],
+                            'concentric_power_max': values[4],
+                            'concentric_power_avg': values[4],
+                            'exentric_power_max': values[5],
+                            'exentric_power_avg': values[5]
+                        }
+                return None
         except:
             return None
     
@@ -157,13 +185,20 @@ class BioDashCollector:
         apellido = input("Apellido: ")
         tipo = input("Tipo de máquina (1=yoyosq, 2=encoder, 3=polea): ")
         
-        print("📡 Recolectando datos... (Ctrl+C para parar)")
+        print("📡 Recolectando 10 datos en 1 minuto...")
+        
+        start_time = time.time()
+        timeout = 60
+        max_readings = 10
+        reading_count = 0
+        interval = timeout / max_readings  # 6 segundos entre lecturas
         
         try:
-            while True:
+            while time.time() - start_time < timeout and reading_count < max_readings:
                 data = self.read_data()
                 if data:
-                    print(f"📊 Datos: {data}")
+                    reading_count += 1
+                    print(f"📊 Lectura {reading_count}/{max_readings}: {data}")
                     
                     # Guardar según tipo
                     if tipo == "1":
@@ -177,6 +212,12 @@ class BioDashCollector:
                         self.save_usuario(nombre, apellido, polea_id=machine_id)
                     
                     print("✅ Guardado en BD")
+                    
+                    # Esperar antes de la siguiente lectura
+                    if reading_count < max_readings:
+                        time.sleep(interval)
+            
+            print(f"\n⏱️ Completado: {reading_count} lecturas en {int(time.time() - start_time)} segundos")
         
         except KeyboardInterrupt:
             print("\n🛑 Detenido")

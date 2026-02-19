@@ -9,10 +9,10 @@ class DatabaseConnection:
         """Conectar a la base de datos BioDash"""
         try:
             self.connection = mysql.connector.connect(
-                host='localhost',
-                user='root',
-                password="",
-                database='BioDash',
+                host=DB_HOST,
+                user=DB_USER,
+                password=DB_PASSWORD,
+                database=DB_NAME,
                 port=3306
             )
             print("✅ Conectado a base de datos BioDash")

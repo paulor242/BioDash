@@ -20,6 +20,10 @@ class YoyoSQ:
             data.get('velocity_avg'), data.get('velocity_max'),
             data.get('exentric_force_max'), data.get('exentric_force_avg')
         )
+        
+        if None in values:
+            print(f"⚠️ Datos faltantes en YoyoSQ: {dict(zip(['acceleration_avg', 'acceleration_max', 'exentric_power_max', 'exentric_power_avg', 'concentric_power_max', 'concentric_power_avg', 'concentric_force_max', 'concentric_force_avg', 'velocity_avg', 'velocity_max', 'exentric_force_max', 'exentric_force_avg'], values))}")
+        
         cursor.execute(query, values)
         self.db_connection.commit()
         return cursor.lastrowid

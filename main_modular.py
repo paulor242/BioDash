@@ -52,13 +52,20 @@ class BioDashCollector:
         polea = PoleaConica(connection)
         usuario = Usuario(connection)
         
-        print("📡 Recolectando datos... (Ctrl+C para parar)")
+        print("📡 Recolectando 10 datos en 1 minuto...")
+        
+        start_time = time.time()
+        timeout = 60
+        max_readings = 10
+        reading_count = 0
+        interval = timeout / max_readings  # 6 segundos entre lecturas
         
         try:
-            while True:
+            while time.time() - start_time < timeout and reading_count < max_readings:
                 data = self.usb.read_data()
                 if data:
-                    print(f"📊 Datos: {data}")
+                    reading_count += 1
+                    print(f"📊 Lectura {reading_count}/{max_readings}: {data}")
                     
                     # Guardar según tipo
                     if tipo == "1":
@@ -72,7 +79,12 @@ class BioDashCollector:
                         usuario.save(nombre, apellido, polea_id=machine_id)
                     
                     print("✅ Guardado en BD")
-                time.sleep(0.1)
+                    
+                    # Esperar antes de la siguiente lectura
+                    if reading_count < max_readings:
+                        time.sleep(interval)
+            
+            print(f"\n⏱️ Completado: {reading_count} lecturas en {int(time.time() - start_time)} segundos")
         
         except KeyboardInterrupt:
             print("\n🛑 Detenido")
