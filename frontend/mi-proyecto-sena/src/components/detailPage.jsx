@@ -7,6 +7,7 @@ import ChartEncoderLineal from "./charts/ChartEncoderLineal";
 import ChartOptogate from "./charts/ChartOptogate";
 import ChartBioimpedancia from "./charts/ChartBioimpedancia";
 import ChartIsosinetica from "./charts/ChartIsosinetica";
+import ChartDataTable from "./charts/ChartDataTable";
 
 const CHART_COMPONENTS = {
   yoyosq: ChartYoyosq,
@@ -97,6 +98,7 @@ function DetailPage({ pruebaId, userName }) {
         </div>
         <div ref={chartRef} style={{ padding: "28px 26px" }}>
           <ChartComponent data={chartData} />
+          <ChartDataTable data={chartData} />
         </div>
         <div
           style={{
