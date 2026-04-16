@@ -31,7 +31,7 @@ export const DATA = {
     { factor: "Repeticion 2", estres: 50, bienestar: 78, motivacion: 80 },
     { factor: "Repeticion 3", estres: 45, bienestar: 82, motivacion: 85 },
     { factor: "Repeticion 4", estres: 40, bienestar: 88, motivacion: 90 },
-    { factor: "Repeticion 5", estres: 60, bienestar: 40, motivacion: 90}
+    { factor: "Repeticion 5", estres: 60, bienestar: 40, motivacion: 90 }
   ],
   BioImpedancia: [
     { factor: "Semana 1", estres: 60, bienestar: 70, motivacion: 75 },

@@ -1,91 +1,149 @@
+import json
+import time
+
 import serial
 import serial.tools.list_ports
-import json
+
+
+YOYOSQ_KEYS = [
+    "acceleration_avg",
+    "acceleration_max",
+    "exentric_power_max",
+    "exentric_power_avg",
+    "concentric_power_max",
+    "concentric_power_avg",
+    "concentric_force_max",
+    "concentric_force_avg",
+    "velocity_avg",
+    "velocity_max",
+    "exentric_force_max",
+    "exentric_force_avg",
+]
+
+ENCODER_KEYS = [
+    "force_max",
+    "velocity_max_avg",
+    "velocity_max",
+    "acceleration_max",
+    "power_max",
+    "propulsive_power_avg",
+    "power_avg",
+    "impulse_max",
+    "impulse_avg",
+    "distance_max",
+    "time_force_max",
+    "time_impulse",
+    "time_accel_max",
+    "ideal_rm",
+    "fatigue",
+]
+
 
 class USBHandler:
     def __init__(self):
         self.connection = None
-    
+
     def list_ports(self):
         """Listar puertos USB disponibles"""
         ports = serial.tools.list_ports.comports()
         return [(port.device, port.description) for port in ports]
-    
+
     def connect(self, port, baudrate=9600):
         """Conectar al puerto USB"""
         try:
             self.connection = serial.Serial(port, baudrate, timeout=1)
-            print(f"✅ Conectado a {port}")
+            print(f"Conectado a {port}")
             return True
         except Exception as e:
-            print(f"❌ Error USB: {e}")
+            print(f"Error USB: {e}")
             return False
-    
+
     def read_data(self):
-        """Leer datos del puerto USB"""
+        """Leer y parsear una linea del puerto USB."""
         if not self.connection or not self.connection.is_open:
             return None
+
         try:
-            data = self.connection.readline().decode('utf-8').strip()
-            print(f"📡 RAW DATA recibida: '{data}'")  # SIEMPRE log raw
-            if not data:
+            raw_data = self.connection.readline().decode("utf-8", errors="ignore").strip()
+            print(f"RAW DATA recibida: '{raw_data}'")
+
+            if not raw_data:
                 return None
-                
-            # Intentar JSON
+
             try:
-                parsed = json.loads(data)
+                parsed = json.loads(raw_data)
                 if isinstance(parsed, dict):
-                    print(f"✅ JSON válido: {parsed}")
+                    print(f"JSON valido: {parsed}")
                     return parsed
-                elif isinstance(parsed, (int, float)):
-                    print(f"✅ Número simple: {parsed}")
-                    return {'velocity_max': float(parsed), 'velocity_avg': float(parsed)}
+                if isinstance(parsed, (int, float)):
+                    numeric_value = float(parsed)
+                    print(f"Numero simple: {numeric_value}")
+                    return {
+                        "velocity_max": numeric_value,
+                        "velocity_avg": numeric_value,
+                    }
             except json.JSONDecodeError:
                 pass
-            
-            # Intentar CSV comma-separated
-            if ',' in data:
-                try:
-                    parts = [p.strip() for p in data.split(',')]
-                    print(f"📡 CSV parseado: {len(parts)} campos: {parts}")
-                    generic_data = {
-                        'raw_parts': parts,
-                        'field_count': len(parts)
-                    }
-                    # Mapear a campos comunes basados en máquina
-                    if len(parts) >= 12:  # YoyoSQ/Polea full
-                        generic_data.update({
-                            'acceleration_avg': float(parts[0]) if parts[0] else None,
-                            'acceleration_max': float(parts[1]) if len(parts)>1 and parts[1] else None,
-                            'exentric_power_max': float(parts[2]) if len(parts)>2 and parts[2] else None,
-                            # ... más mappings
-                            'velocity_max': float(parts[9]) if len(parts)>9 and parts[9] else None,
-                        })
-                    elif len(parts) >=1:
-                        generic_data['velocity_max'] = float(parts[0]) if parts[0] else None
-                        generic_data['velocity_avg'] = generic_data['velocity_max']
-                    print(f"✅ Datos genéricos: {generic_data}")
-                    return generic_data
-                except ValueError as ve:
-                    print(f"⚠️ Error parse números CSV: {ve}")
-            
-            # Número simple
+
+            if "," in raw_data:
+                parts = [part.strip() for part in raw_data.split(",")]
+                print(f"CSV parseado: {len(parts)} campos: {parts}")
+                parsed_csv = self._parse_csv_parts(parts)
+                print(f"Datos parseados: {parsed_csv}")
+                return parsed_csv
+
             try:
-                num = float(data)
-                print(f"✅ Número simple: {num}")
-                return {'velocity_max': num, 'velocity_avg': num}
+                numeric_value = float(raw_data)
+                print(f"Numero simple: {numeric_value}")
+                return {
+                    "velocity_max": numeric_value,
+                    "velocity_avg": numeric_value,
+                }
             except ValueError:
-                pass
-            
-            # Raw text
-            print(f"📄 Datos raw como texto")
-            return {'raw_text': data}
-            
+                print("Dato recibido como texto plano")
+                return {"raw_text": raw_data}
+
         except Exception as e:
-            print(f"❌ Error USB read: {e}")
+            print(f"Error USB read: {e}")
             return None
-    
+
+    def read_sample_for_window(self, window_seconds):
+        """Esperar una muestra valida dentro de una ventana fija."""
+        deadline = time.monotonic() + max(window_seconds, 0)
+
+        while time.monotonic() < deadline:
+            data = self.read_data()
+            if data:
+                return data
+
+        return None
+
+    def _parse_csv_parts(self, parts):
+        parsed_parts = [float(part) if part else None for part in parts]
+        parsed_data = {
+            "raw_parts": parts,
+            "field_count": len(parts),
+        }
+
+        if len(parsed_parts) >= len(ENCODER_KEYS):
+            parsed_data.update(
+                {key: parsed_parts[index] for index, key in enumerate(ENCODER_KEYS)}
+            )
+            return parsed_data
+
+        if len(parsed_parts) >= len(YOYOSQ_KEYS):
+            parsed_data.update(
+                {key: parsed_parts[index] for index, key in enumerate(YOYOSQ_KEYS)}
+            )
+            return parsed_data
+
+        if parsed_parts:
+            parsed_data["velocity_max"] = parsed_parts[0]
+            parsed_data["velocity_avg"] = parsed_parts[0]
+
+        return parsed_data
+
     def close(self):
-        """Cerrar conexión USB"""
+        """Cerrar conexion USB"""
         if self.connection:
             self.connection.close()
