@@ -1,0 +1,59 @@
+import {
+  LineChart,
+  Line,
+  CartesianGrid,
+  XAxis,
+  YAxis,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
+import { SENA_COLORS } from "../../constants/colors";
+
+function ChartEncoderLineal({ data }) {
+  return (
+    <ResponsiveContainer width="100%" height={340}>
+      <LineChart
+        data={data}
+        margin={{ top: 10, right: 20, left: 0, bottom: 5 }}
+      >
+        <CartesianGrid strokeDasharray="3 3" stroke="#d1e8c8" />
+        <XAxis
+          dataKey="repeticion"
+          tick={{ fill: SENA_COLORS.darkGray, fontSize: 12 }}
+        />
+        <YAxis
+          tick={{ fill: SENA_COLORS.midGray, fontSize: 12 }}
+          domain={[0, 100]}
+        />
+        <Tooltip
+          contentStyle={{
+            borderRadius: 10,
+            border: `1px solid ${SENA_COLORS.green}`,
+          }}
+        />
+        <Legend />
+        <Line
+          type="monotone"
+          dataKey="veliciti_max_avg"
+          name="velocidad _maxima promedio"
+          stroke={SENA_COLORS.darkGreen}
+          strokeWidth={3}
+          dot={{ r: 5 }}
+        />
+        <Line
+          type="monotone"
+          dataKey="velociti_max"
+          name="velocidad maxima"
+          stroke={SENA_COLORS.yellow}
+          strokeWidth={3}
+          dot={{ r: 5 }}
+        />
+
+
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
+export default ChartEncoderLineal;
