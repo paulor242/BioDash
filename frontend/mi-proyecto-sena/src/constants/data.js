@@ -7,6 +7,7 @@ export const DATA = {
     { repeticion: "repeticion 5", aceleration_max_avg: 85, aceleration_max: 88 },
     { repeticion: "repeticion 6", aceleration_max_avg: 78, aceleration_max: 92 },
     { repeticion: "repeticion 7", aceleration_max_avg: 90, aceleration_max: 95 },
+    { repeticion: "repeticion 8", aceleration_max_avg: 40, aceleration_max: 30 }
   ],
   isosinetica: [
     { mes: "", manual: 70, digital: 60 },
@@ -18,7 +19,7 @@ export const DATA = {
   ],
   encoder_lineal: [
     { repeticion: "repeticion 1", veliciti_max_avg: 70, velociti_max: 60 },
-    { repeticion: "repeticion 2", veliciti_max_avg: 75, velociti_max: 68 },
+    { repeticion: "repeticion 2", veliciti_max_avg: 75, velociti_max: 58 },
     { repeticion: "repeticion 3", veliciti_max_avg: 80, velociti_max: 78 },
     { repeticion: "repeticion 4", veliciti_max_avg: 80, velociti_max: 78 },
     { repeticion: "repeticion 5", veliciti_max_avg: 85, velociti_max: 88 },
@@ -30,7 +31,7 @@ export const DATA = {
     { factor: "Repeticion 2", estres: 50, bienestar: 78, motivacion: 80 },
     { factor: "Repeticion 3", estres: 45, bienestar: 82, motivacion: 85 },
     { factor: "Repeticion 4", estres: 40, bienestar: 88, motivacion: 90 },
-    { factor: "Repeticion 5", estres: 60, bienestar: 40, motivacion: 90}
+    { factor: "Repeticion 5", estres: 60, bienestar: 40, motivacion: 90 }
   ],
   BioImpedancia: [
     { factor: "Semana 1", estres: 60, bienestar: 70, motivacion: 75 },
